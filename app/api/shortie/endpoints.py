@@ -11,7 +11,6 @@ from app.api.shortie.funcs import base62encode
 from app.api.shortie.models import ShortenedURL
 from app.api.shortie.schemas import LongUrl, ShortenReponse
 from app.cache.conn import RedisClientManager
-from app.cache.schemas import key_schemas
 from app.core.config import settings
 
 router = APIRouter()
@@ -42,7 +41,7 @@ def read_long_url(short_url_id: str, request: Request, response: Response):
 @router.post("")
 def shorten_url(body: LongUrl, request: Request, response: Response):
     with RedisClientManager() as cache:
-        counter = cache.incr("counter")
+        counter = cache.incr(settings.COUNTER_CACHE_KEY)
         long_url = body.url
 
         encoded_url = base62encode(counter - 1)
