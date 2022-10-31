@@ -1,4 +1,3 @@
-from pydantic import Json
 from redis_om import JsonModel
 
 
