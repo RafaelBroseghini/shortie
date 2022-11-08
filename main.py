@@ -1,5 +1,3 @@
-from unicodedata import name
-
 from fastapi import FastAPI
 
 from app.cache.conn import RedisClientManager
