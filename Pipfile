@@ -9,6 +9,7 @@ uvicorn = {extras = ["standard"], version = "*"}
 redis = "*"
 isort = "*"
 redis-om = "*"
+celery = {extras = ["redis"], version = "*"}
 
 [dev-packages]
 black = "*"
