@@ -8,8 +8,12 @@ from starlette.responses import Response
 from app.api.analytics.models import Statistic
 from app.api.shortie.funcs import base62encode, make_short_url
 from app.api.shortie.models import ShortenedURL
-from app.api.shortie.schemas import (DeleteResponse, LongUrl, ShortenReponse,
-                                     UpdateResponse)
+from app.api.shortie.schemas import (
+    DeleteResponse,
+    LongUrl,
+    ShortenReponse,
+    UpdateResponse,
+)
 from app.cache.conn import RedisClientManager
 from app.core.config import settings
 
@@ -22,7 +26,7 @@ def read(short_url_id: str, request: Request, response: Response):
         now = datetime.datetime.now()
 
         shortened_url, short_url_analytics = ShortenedURL.find(
-            shortened_url == short_url_id
+            ShortenedURL.shortened_url == short_url_id
         ).first(), Statistic.find(Statistic.short_url_id == short_url_id)
 
         short_url_analytics.clicks += 1
