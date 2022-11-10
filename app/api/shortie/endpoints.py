@@ -8,12 +8,8 @@ from starlette.responses import Response
 from app.api.analytics.models import Statistic
 from app.api.shortie.funcs import base62encode, make_short_url
 from app.api.shortie.models import ShortenedURL
-from app.api.shortie.schemas import (
-    DeleteResponse,
-    LongUrl,
-    ShortenReponse,
-    UpdateResponse,
-)
+from app.api.shortie.schemas import (DeleteResponse, LongUrl, ShortenReponse,
+                                     UpdateResponse)
 from app.cache.conn import RedisClientManager
 from app.core.config import settings
 

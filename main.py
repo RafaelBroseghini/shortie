@@ -5,8 +5,6 @@ from app.cache.conn import RedisClientManager
 from app.core.config import settings
 from app.router import api_router
 
-from app.core.config import settings
-
 app = FastAPI(debug=True, name="Shortie - Link Shrtnr :)")
 
 app.include_router(api_router)
