@@ -25,9 +25,10 @@ def read(short_url_id: str, request: Request, response: Response):
     with RedisClientManager() as cache:
         now = datetime.datetime.now()
 
-        shortened_url, short_url_analytics = ShortenedURL.find(
-            ShortenedURL.short_url_id == short_url_id
-        ).first(), Statistic.find(Statistic.short_url_id == short_url_id)
+        shortened_url, short_url_analytics = (
+            ShortenedURL.find(ShortenedURL.short_url_id == short_url_id).first(),
+            Statistic.find(Statistic.short_url_id == short_url_id).first(),
+        )
 
         short_url_analytics.clicks += 1
         short_url_analytics.last_visited = now
