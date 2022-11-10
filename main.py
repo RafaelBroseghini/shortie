@@ -1,8 +1,11 @@
 from fastapi import FastAPI
+from redis_om import Migrator
 
 from app.cache.conn import RedisClientManager
 from app.core.config import settings
 from app.router import api_router
+
+from app.core.config import settings
 
 app = FastAPI(debug=True, name="Shortie - Link Shrtnr :)")
 
@@ -15,3 +18,4 @@ async def startup_event():
         with RedisClientManager() as cache:
             cache.flushdb()
             cache.set(settings.COUNTER_CACHE_KEY, settings.INIT_COUNTER_VALUE)
+        Migrator().run()
