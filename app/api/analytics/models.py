@@ -1,9 +1,9 @@
 from datetime import datetime
 
-from pydantic import validator
-from redis_om import JsonModel
+from redis_om import JsonModel, Field
 
 
 class Statistic(JsonModel):
+    short_url_id: str = Field(index=True)
     clicks: int = 0
     last_visited: datetime = None
