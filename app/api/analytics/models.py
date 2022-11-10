@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from redis_om import JsonModel, Field
+from redis_om import Field, JsonModel
 
 
 class Statistic(JsonModel):
