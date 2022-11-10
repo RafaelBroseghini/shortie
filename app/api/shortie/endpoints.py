@@ -1,15 +1,19 @@
 import datetime
 
-import pip
 from fastapi import APIRouter
 from fastapi.responses import RedirectResponse
 from starlette.requests import Request
 from starlette.responses import Response
 
 from app.api.analytics.models import Statistic
-from app.api.shortie.funcs import base62encode
+from app.api.shortie.funcs import base62encode, make_short_url
 from app.api.shortie.models import ShortenedURL
-from app.api.shortie.schemas import LongUrl, ShortenReponse
+from app.api.shortie.schemas import (
+    DeleteResponse,
+    LongUrl,
+    ShortenReponse,
+    UpdateResponse,
+)
 from app.cache.conn import RedisClientManager
 from app.core.config import settings
 
@@ -17,52 +21,83 @@ router = APIRouter()
 
 
 @router.get("/{short_url_id}", response_class=RedirectResponse)
-def read_long_url(short_url_id: str, request: Request, response: Response):
+def read(short_url_id: str, request: Request, response: Response):
     with RedisClientManager() as cache:
         now = datetime.datetime.now()
 
-        pk_url = cache.get(f"{short_url_id}")
-        pk_analytics = cache.get(f"analytics:{short_url_id}")
-
-        short_url, short_url_analytics = ShortenedURL.get(pk_url), Statistic.get(
-            pk_analytics
-        )
+        shortened_url, short_url_analytics = ShortenedURL.find(
+            shortened_url == short_url_id
+        ).first(), Statistic.find(Statistic.short_url_id == short_url_id)
 
         short_url_analytics.clicks += 1
         short_url_analytics.last_visited = now
 
         short_url_analytics.save()
 
-        long_url = short_url.dict().get("long_url")
+        long_url = shortened_url.long_url
 
         return long_url
 
 
 @router.post("")
-def shorten_url(body: LongUrl, request: Request, response: Response):
+def create(body: LongUrl, request: Request, response: Response):
     with RedisClientManager() as cache:
         counter = cache.incr(settings.COUNTER_CACHE_KEY)
-        long_url = body.url
-
-        encoded_url = base62encode(counter - 1)
+        short_url_id = base62encode(counter - 1)
+        short_url = make_short_url(short_url_id)
+        long_url = body.long_url
 
         shortened_url, shortened_url_analytics = (
-            ShortenedURL(short_url=encoded_url, long_url=long_url),
-            Statistic(),
-        )
-        pk_url, pk_analytics = (
-            shortened_url.pk,
-            shortened_url_analytics.pk,
+            ShortenedURL(
+                short_url_id=short_url_id, short_url=short_url, long_url=long_url
+            ),
+            Statistic(short_url_id=short_url_id),
         )
 
-        pipeline = cache.pipeline()
-        pipeline.set(encoded_url, pk_url, ex=settings.CACHE_TTL).set(
-            f"analytics:{encoded_url}", pk_analytics
-        )
-        pipeline.execute()
-
+        ttl = settings.CACHE_TTL
         shortened_url.save()
+        shortened_url.expire(ttl)
         shortened_url_analytics.save()
-        shortened_url.expire(settings.CACHE_TTL)
+        shortened_url_analytics.expire(ttl)
 
-        return ShortenedURL.get(pk_url)
+        return ShortenReponse(
+            short_url_id=short_url_id, short_url=short_url, long_url=long_url, ttl=ttl
+        )
+
+
+@router.put(
+    "/{short_url_id}",
+)
+def udpate(short_url_id: str, body: LongUrl):
+    shortened_url = ShortenedURL.find(ShortenedURL.short_url_id == short_url_id).first()
+    if not shortened_url:
+        return {"error": f"Short url id: [{short_url_id}] not found."}
+    previous_long_url, new_long_url = shortened_url.long_url, body.long_url
+    short_url = shortened_url.short_url
+    shortened_url.long_url = new_long_url
+
+    shortened_url.save()
+
+    return UpdateResponse(
+        short_url_id=short_url_id,
+        short_url=short_url,
+        previous_long_url=previous_long_url,
+        new_long_url=new_long_url,
+    )
+
+
+@router.delete(
+    "/{short_url_id}",
+)
+def delete(short_url_id: str):
+    shortened_url = ShortenedURL.find(ShortenedURL.short_url_id == short_url_id).first()
+    if not shortened_url:
+        return {"error": f"Short url id: [{short_url_id}] not found."}
+
+    shortened_url.delete(shortened_url.pk)
+
+    return DeleteResponse(
+        short_url_id=short_url_id,
+        short_url=shortened_url.short_url,
+        long_url=shortened_url.long_url,
+    )
