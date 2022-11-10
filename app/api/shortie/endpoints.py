@@ -26,7 +26,7 @@ def read(short_url_id: str, request: Request, response: Response):
         now = datetime.datetime.now()
 
         shortened_url, short_url_analytics = ShortenedURL.find(
-            ShortenedURL.shortened_url == short_url_id
+            ShortenedURL.short_url_id == short_url_id
         ).first(), Statistic.find(Statistic.short_url_id == short_url_id)
 
         short_url_analytics.clicks += 1
