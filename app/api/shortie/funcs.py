@@ -11,3 +11,7 @@ def base62encode(number: int) -> str:
         res.append(SHORTENER_MAP[rem])
         number = number // base
     return "".join(res)
+
+
+def make_short_url(short_url_id: str) -> str:
+    return f"https://shortie/{short_url_id}"
