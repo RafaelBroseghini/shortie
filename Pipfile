@@ -10,6 +10,11 @@ redis = "*"
 isort = "*"
 redis-om = "*"
 celery = {extras = ["redis"], version = "*"}
+pytest = "*"
+requests = "*"
+pytest-cov = "*"
+tox = "*"
+exceptiongroup = "*"
 
 [dev-packages]
 black = "*"
