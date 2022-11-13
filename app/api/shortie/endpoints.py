@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 
 from fastapi import APIRouter
@@ -21,29 +22,28 @@ router = APIRouter()
 
 
 @router.get("/{short_url_id}", response_class=RedirectResponse)
-def read(short_url_id: str, request: Request, response: Response):
-    with RedisClientManager() as cache:
-        now = datetime.datetime.now()
+async def read(short_url_id: str, request: Request, response: Response):
+    now = datetime.datetime.now()
 
-        shortened_url, short_url_analytics = (
-            ShortenedURL.find(
-                ShortenedURL.short_url_id == short_url_id
-            ).first(),
-            Statistic.find(Statistic.short_url_id == short_url_id).first(),
-        )
+    shortened_url, short_url_analytics = (
+        await ShortenedURL.find(
+            ShortenedURL.short_url_id == short_url_id
+        ).first(),
+        await Statistic.find(Statistic.short_url_id == short_url_id).first(),
+    )
 
-        short_url_analytics.clicks += 1
-        short_url_analytics.last_visited = now
+    short_url_analytics.clicks += 1
+    short_url_analytics.last_visited = now
 
-        short_url_analytics.save()
+    await short_url_analytics.save()
 
-        long_url = shortened_url.long_url
+    long_url = shortened_url.long_url
 
-        return long_url
+    return long_url
 
 
 @router.post("")
-def create(body: LongUrl, request: Request, response: Response):
+async def create(body: LongUrl, request: Request, response: Response):
     with RedisClientManager() as cache:
         counter = cache.incr(settings.COUNTER_CACHE_KEY)
         short_url_id = base62encode(counter - 1)
@@ -60,10 +60,11 @@ def create(body: LongUrl, request: Request, response: Response):
         )
 
         ttl = settings.CACHE_TTL
-        shortened_url.save()
-        shortened_url.expire(ttl)
-        shortened_url_analytics.save()
-        shortened_url_analytics.expire(ttl)
+        async with asyncio.TaskGroup() as tg:
+            tg.create_task(shortened_url.save())
+            tg.create_task(shortened_url.expire(ttl))
+            tg.create_task(shortened_url_analytics.save())
+            tg.create_task(shortened_url_analytics.expire(ttl))
 
         return ShortenReponse(
             short_url_id=short_url_id,
@@ -76,8 +77,8 @@ def create(body: LongUrl, request: Request, response: Response):
 @router.put(
     "/{short_url_id}",
 )
-def udpate(short_url_id: str, body: LongUrl):
-    shortened_url = ShortenedURL.find(
+async def udpate(short_url_id: str, body: LongUrl):
+    shortened_url = await ShortenedURL.find(
         ShortenedURL.short_url_id == short_url_id
     ).first()
     if not shortened_url:
@@ -86,7 +87,7 @@ def udpate(short_url_id: str, body: LongUrl):
     short_url = shortened_url.short_url
     shortened_url.long_url = new_long_url
 
-    shortened_url.save()
+    await shortened_url.save()
 
     return UpdateResponse(
         short_url_id=short_url_id,
@@ -99,14 +100,14 @@ def udpate(short_url_id: str, body: LongUrl):
 @router.delete(
     "/{short_url_id}",
 )
-def delete(short_url_id: str):
-    shortened_url = ShortenedURL.find(
+async def delete(short_url_id: str):
+    shortened_url = await ShortenedURL.find(
         ShortenedURL.short_url_id == short_url_id
     ).first()
     if not shortened_url:
         return {"error": f"Short url id: [{short_url_id}] not found."}
 
-    shortened_url.delete(shortened_url.pk)
+    await shortened_url.delete(shortened_url.pk)
 
     return DeleteResponse(
         short_url_id=short_url_id,
