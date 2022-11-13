@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.analytics.models import Statistic
+from app.api.analytics.models import Analytics
 from app.api.analytics.schemas import ReadResponse
 
 router = APIRouter()
@@ -8,8 +8,8 @@ router = APIRouter()
 
 @router.get("/{short_url_id}", response_model=ReadResponse)
 async def view_number_of_clicks(short_url_id: str):
-    analytics = await Statistic.find(
-        Statistic.short_url_id == short_url_id
+    analytics = await Analytics.find(
+        Analytics.short_url_id == short_url_id
     ).first()
 
     if analytics:

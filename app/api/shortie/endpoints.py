@@ -1,12 +1,16 @@
 import asyncio
 import datetime
 
+from aredis_om import NotFoundError
 from fastapi import APIRouter
+from fastapi.exceptions import HTTPException
 from fastapi.responses import RedirectResponse
 from starlette.requests import Request
 from starlette.responses import Response
 
-from app.api.analytics.models import Statistic
+import app.api.analytics.dao as AnalyticsDAO
+import app.api.shortie.dao as ShortieDAO
+from app.api.analytics.models import Analytics
 from app.api.shortie.funcs import base62encode, make_short_url
 from app.api.shortie.models import ShortenedURL
 from app.api.shortie.schemas import (
@@ -25,12 +29,15 @@ router = APIRouter()
 async def read(short_url_id: str, request: Request, response: Response):
     now = datetime.datetime.now()
 
-    shortened_url, short_url_analytics = (
-        await ShortenedURL.find(
-            ShortenedURL.short_url_id == short_url_id
-        ).first(),
-        await Statistic.find(Statistic.short_url_id == short_url_id).first(),
-    )
+    try:
+        shortened_url, short_url_analytics = (
+            await ShortieDAO.find_by_short_url_id(short_url_id),
+            await AnalyticsDAO.find_by_short_url_id(short_url_id),
+        )
+    except NotFoundError:
+        raise HTTPException(
+            status_code=404, detail={"error": "short url not found."}
+        )
 
     short_url_analytics.clicks += 1
     short_url_analytics.last_visited = now
@@ -56,15 +63,16 @@ async def create(body: LongUrl, request: Request, response: Response):
                 short_url=short_url,
                 long_url=long_url,
             ),
-            Statistic(short_url_id=short_url_id),
+            Analytics(short_url_id=short_url_id),
         )
 
         ttl = settings.CACHE_TTL
-        async with asyncio.TaskGroup() as tg:
-            tg.create_task(shortened_url.save())
-            tg.create_task(shortened_url.expire(ttl))
-            tg.create_task(shortened_url_analytics.save())
-            tg.create_task(shortened_url_analytics.expire(ttl))
+        asyncio.gather(
+            shortened_url.save(),
+            shortened_url.expire(ttl),
+            shortened_url_analytics.save(),
+            shortened_url_analytics.expire(ttl),
+        )
 
         return ShortenReponse(
             short_url_id=short_url_id,
@@ -78,11 +86,13 @@ async def create(body: LongUrl, request: Request, response: Response):
     "/{short_url_id}",
 )
 async def udpate(short_url_id: str, body: LongUrl):
-    shortened_url = await ShortenedURL.find(
-        ShortenedURL.short_url_id == short_url_id
-    ).first()
-    if not shortened_url:
-        return {"error": f"Short url id: [{short_url_id}] not found."}
+    try:
+        shortened_url = await ShortieDAO.find_by_short_url_id(short_url_id)
+    except NotFoundError:
+        raise HTTPException(
+            status_code=404, detail={"error": "short url not found."}
+        )
+
     previous_long_url, new_long_url = shortened_url.long_url, body.long_url
     short_url = shortened_url.short_url
     shortened_url.long_url = new_long_url
@@ -101,9 +111,12 @@ async def udpate(short_url_id: str, body: LongUrl):
     "/{short_url_id}",
 )
 async def delete(short_url_id: str):
-    shortened_url = await ShortenedURL.find(
-        ShortenedURL.short_url_id == short_url_id
-    ).first()
+    try:
+        shortened_url = await ShortieDAO.find_by_short_url_id(short_url_id)
+    except NotFoundError:
+        raise HTTPException(
+            status_code=404, detail={"error": "short url not found."}
+        )
     if not shortened_url:
         return {"error": f"Short url id: [{short_url_id}] not found."}
 
