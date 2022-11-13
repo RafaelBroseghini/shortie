@@ -1,5 +1,5 @@
+from aredis_om import Migrator
 from fastapi import FastAPI
-from redis_om import Migrator
 
 from app.cache.conn import RedisClientManager
 from app.core.config import settings
@@ -16,4 +16,4 @@ async def startup_event():
         with RedisClientManager() as cache:
             cache.flushdb()
             cache.set(settings.COUNTER_CACHE_KEY, settings.INIT_COUNTER_VALUE)
-        Migrator().run()
+        await Migrator().run()

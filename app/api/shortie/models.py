@@ -1,4 +1,4 @@
-from redis_om import Field, JsonModel
+from aredis_om import Field, JsonModel
 
 
 class ShortenedURL(JsonModel):
