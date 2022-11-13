@@ -16,4 +16,6 @@ def view_number_of_clicks(short_url_id: str):
             clicks=analytics.clicks,
             last_visited=analytics.last_visited,
         )
-    return {"error": f"Shortened url [https://shortie/{short_url_id}] not found."}
+    return {
+        "error": f"Shortened url [https://shortie/{short_url_id}] not found."
+    }

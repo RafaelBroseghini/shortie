@@ -15,6 +15,7 @@ requests = "*"
 pytest-cov = "*"
 tox = "*"
 exceptiongroup = "*"
+pre-commit = "*"
 
 [dev-packages]
 black = "*"
