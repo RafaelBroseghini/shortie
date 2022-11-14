@@ -1,10 +1,8 @@
 import asyncio
 import datetime
 
-from aredis_om import NotFoundError
 from fastapi import APIRouter
-from fastapi.exceptions import HTTPException
-from fastapi.responses import RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from starlette.requests import Request
 from starlette.responses import Response
 
@@ -30,8 +28,8 @@ async def read(short_url_id: str, request: Request, response: Response):
     now = datetime.datetime.now()
 
     shortened_url, short_url_analytics = (
-        await ShortieDAO.find_by_short_url_id(short_url_id),
-        await AnalyticsDAO.find_by_short_url_id(short_url_id),
+        await ShortieDAO.find_by_short_url_id_or_alias(short_url_id),
+        await AnalyticsDAO.find_by_short_url_id_or_alias(short_url_id),
     )
 
     short_url_analytics.clicks += 1
@@ -50,15 +48,22 @@ async def create(body: LongUrl, request: Request, response: Response):
         counter = cache.incr(settings.COUNTER_CACHE_KEY)
         short_url_id = base62encode(counter - 1)
         short_url = make_short_url(short_url_id)
-        long_url = body.long_url
+        alias, long_url = body.alias, body.long_url
+
+        if alias and await ShortieDAO.alias_already_exists(alias):
+            return JSONResponse(
+                status_code=200,
+                content={"error": f"alias {alias} is already taken."},
+            )
 
         shortened_url, shortened_url_analytics = (
             ShortenedURL(
                 short_url_id=short_url_id,
+                alias=alias,
                 short_url=short_url,
                 long_url=long_url,
             ),
-            Analytics(short_url_id=short_url_id),
+            Analytics(short_url_id=short_url_id, alias=alias),
         )
 
         ttl = settings.CACHE_TTL
@@ -71,6 +76,7 @@ async def create(body: LongUrl, request: Request, response: Response):
 
         return ShortenReponse(
             short_url_id=short_url_id,
+            alias=alias,
             short_url=short_url,
             long_url=long_url,
             ttl=ttl,
