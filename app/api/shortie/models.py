@@ -1,6 +1,6 @@
 from typing import Optional
 
-from aredis_om import Field, HashModel, JsonModel
+from aredis_om import Field, JsonModel
 
 
 class ShortenedURL(JsonModel):
