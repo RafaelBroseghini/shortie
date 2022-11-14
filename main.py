@@ -1,5 +1,8 @@
-from aredis_om import Migrator
+from aredis_om import Migrator, NotFoundError
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
+from redis.exceptions import ConnectionError
+from starlette.requests import Request
 
 from app.cache.conn import RedisClientManager
 from app.core.config import settings
@@ -8,6 +11,16 @@ from app.router import api_router
 app = FastAPI(debug=True, name="Shortie - Link Shrtnr :)")
 
 app.include_router(api_router)
+
+
+@app.exception_handler(ConnectionError)
+async def conn_error_callback(request: Request, exc: Exception):
+    return JSONResponse({"detail": "Connection refused."}, status_code=500)
+
+
+@app.exception_handler(NotFoundError)
+async def data_store_obj_not_found_callback(request: Request, exc: Exception):
+    return JSONResponse({"detail": "Short URL not found :("}, status_code=500)
 
 
 @app.on_event("startup")

@@ -29,15 +29,10 @@ router = APIRouter()
 async def read(short_url_id: str, request: Request, response: Response):
     now = datetime.datetime.now()
 
-    try:
-        shortened_url, short_url_analytics = (
-            await ShortieDAO.find_by_short_url_id(short_url_id),
-            await AnalyticsDAO.find_by_short_url_id(short_url_id),
-        )
-    except NotFoundError:
-        raise HTTPException(
-            status_code=404, detail={"error": "short url not found."}
-        )
+    shortened_url, short_url_analytics = (
+        await ShortieDAO.find_by_short_url_id(short_url_id),
+        await AnalyticsDAO.find_by_short_url_id(short_url_id),
+    )
 
     short_url_analytics.clicks += 1
     short_url_analytics.last_visited = now
@@ -86,12 +81,7 @@ async def create(body: LongUrl, request: Request, response: Response):
     "/{short_url_id}",
 )
 async def udpate(short_url_id: str, body: LongUrl):
-    try:
-        shortened_url = await ShortieDAO.find_by_short_url_id(short_url_id)
-    except NotFoundError:
-        raise HTTPException(
-            status_code=404, detail={"error": "short url not found."}
-        )
+    shortened_url = await ShortieDAO.find_by_short_url_id(short_url_id)
 
     previous_long_url, new_long_url = shortened_url.long_url, body.long_url
     short_url = shortened_url.short_url
@@ -111,14 +101,7 @@ async def udpate(short_url_id: str, body: LongUrl):
     "/{short_url_id}",
 )
 async def delete(short_url_id: str):
-    try:
-        shortened_url = await ShortieDAO.find_by_short_url_id(short_url_id)
-    except NotFoundError:
-        raise HTTPException(
-            status_code=404, detail={"error": "short url not found."}
-        )
-    if not shortened_url:
-        return {"error": f"Short url id: [{short_url_id}] not found."}
+    shortened_url = await ShortieDAO.find_by_short_url_id(short_url_id)
 
     await shortened_url.delete(shortened_url.pk)
 
