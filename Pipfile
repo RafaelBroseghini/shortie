@@ -16,6 +16,7 @@ pytest-cov = "*"
 tox = "*"
 exceptiongroup = "*"
 pre-commit = "*"
+flake8 = "*"
 
 [dev-packages]
 black = "*"

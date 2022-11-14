@@ -1,5 +1,3 @@
-from sys import api_version
-
 from fastapi import APIRouter
 
 from app.api.analytics.endpoints import router as analytics_router
