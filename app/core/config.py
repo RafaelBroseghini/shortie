@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 from pydantic import BaseSettings
 
 
@@ -6,7 +8,17 @@ class Settings(BaseSettings):
     API_PREFIX: str = "/api/v1"
     INIT_COUNTER_VALUE: int = 100000000
     COUNTER_CACHE_KEY: str = "COUNTER"
+    SALT: str
+    JWT_SECRET: str
     CACHE_TTL: int = 3600
 
+    class Config:
+        env_file = ".env"
 
-settings = Settings()
+
+@lru_cache
+def get_settings():
+    return Settings()
+
+
+settings = get_settings()
