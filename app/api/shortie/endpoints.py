@@ -1,7 +1,7 @@
 import asyncio
 import datetime
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse, RedirectResponse
 from starlette.requests import Request
 from starlette.responses import Response
@@ -9,6 +9,7 @@ from starlette.responses import Response
 import app.api.analytics.dao as AnalyticsDAO
 import app.api.shortie.dao as ShortieDAO
 from app.api.analytics.models import Analytics
+from app.api.auth.funcs import get_user_info
 from app.api.shortie.funcs import base62encode, make_short_url
 from app.api.shortie.models import ShortenedURL
 from app.api.shortie.schemas import (
@@ -43,7 +44,9 @@ async def read(short_url_id: str, request: Request, response: Response):
 
 
 @router.post("")
-async def create(body: LongUrl, request: Request, response: Response):
+async def create(
+    body: LongUrl, request: Request, user: dict = Depends(get_user_info)
+):
     with RedisClientManager() as cache:
         counter = cache.incr(settings.COUNTER_CACHE_KEY)
         short_url_id = base62encode(counter - 1)
@@ -86,7 +89,9 @@ async def create(body: LongUrl, request: Request, response: Response):
 @router.put(
     "/{short_url_id}",
 )
-async def udpate(short_url_id: str, body: LongUrl):
+async def udpate(
+    short_url_id: str, body: LongUrl, user: dict = Depends(get_user_info)
+):
     shortened_url = await ShortieDAO.find_by_short_url_id(short_url_id)
 
     previous_long_url, new_long_url = shortened_url.long_url, body.long_url
@@ -106,7 +111,7 @@ async def udpate(short_url_id: str, body: LongUrl):
 @router.delete(
     "/{short_url_id}",
 )
-async def delete(short_url_id: str):
+async def delete(short_url_id: str, user: dict = Depends(get_user_info)):
     shortened_url = await ShortieDAO.find_by_short_url_id(short_url_id)
 
     await shortened_url.delete(shortened_url.pk)
