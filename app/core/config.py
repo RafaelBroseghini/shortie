@@ -8,8 +8,9 @@ class Settings(BaseSettings):
     API_PREFIX: str = "/api/v1"
     INIT_COUNTER_VALUE: int = 100000000
     COUNTER_CACHE_KEY: str = "COUNTER"
-    SALT: str
+    PASSWORD_SALT: str
     JWT_SECRET: str
+    JWT_ALGORITHM: str
     CACHE_TTL: int = 3600
 
     class Config:

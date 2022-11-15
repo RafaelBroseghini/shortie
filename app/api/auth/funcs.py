@@ -35,7 +35,7 @@ def decode_credentials(request: Request):
 
 
 def salt_and_sha256_encrypt(password: str) -> str:
-    salted_password = "".join([password, settings.SALT])
+    salted_password = "".join([password, settings.PASSWORD_SALT])
     return hashlib.sha256(salted_password.encode("utf-8")).hexdigest()
 
 
@@ -46,11 +46,15 @@ def one_hour_from_now():
 
 
 def encode_jwt(payload: dict) -> str:
-    return jwt.encode(payload, settings.JWT_SECRET, algorithm="HS256")
+    return jwt.encode(
+        payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM
+    )
 
 
 def decode_jwt(encoded_jwt: str) -> dict:
-    return jwt.decode(encoded_jwt, settings.JWT_SECRET, algorithms=["HS256"])
+    return jwt.decode(
+        encoded_jwt, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM]
+    )
 
 
 def extract_token(encoded_jwt: str) -> str:
