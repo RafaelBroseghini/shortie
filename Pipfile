@@ -17,6 +17,8 @@ tox = "*"
 exceptiongroup = "*"
 pre-commit = "*"
 flake8 = "*"
+python-dotenv = "*"
+pyjwt = "*"
 
 [dev-packages]
 black = "*"
