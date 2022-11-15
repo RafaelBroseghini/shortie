@@ -7,6 +7,7 @@ from starlette.requests import Request
 from app.cache.conn import RedisClientManager
 from app.core.config import settings
 from app.router import api_router
+from preload import load_users
 
 app = FastAPI(debug=True, name="Shortie - Link Shrtnr :)")
 
@@ -30,3 +31,4 @@ async def startup_event():
             cache.flushdb()
             cache.set(settings.COUNTER_CACHE_KEY, settings.INIT_COUNTER_VALUE)
         await Migrator().run()
+        await load_users()
