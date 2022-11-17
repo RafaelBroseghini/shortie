@@ -9,6 +9,7 @@ from starlette.requests import Request
 
 import app.api.shortie.dao as ShortieDAO
 import app.api.users.dao as UserDAO
+from app.api.common.rate_limiter import RateLimiter
 from app.api.users.models import User
 from app.core.config import settings
 
@@ -84,3 +85,18 @@ async def is_authorized(request: Request):
             status_code=403, detail={"error": "Not authorized"}
         )
     return user
+
+
+async def should_throttle(request: Request):
+    user = await get_user_info(request)
+    username = user.username
+
+    r = RateLimiter(user.request_limit_per_period, user.period_seconds)
+    r.incr_request_count(username)
+
+    should_throttle = r.too_many_requests(username)
+
+    if should_throttle:
+        raise HTTPException(
+            status_code=429, detail={"error": "Too many requests"}
+        )

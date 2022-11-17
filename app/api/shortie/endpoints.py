@@ -9,7 +9,7 @@ from starlette.responses import Response
 import app.api.analytics.dao as AnalyticsDAO
 import app.api.shortie.dao as ShortieDAO
 from app.api.analytics.models import Analytics
-from app.api.auth.funcs import get_user_info, is_authorized
+from app.api.auth.funcs import get_user_info, is_authorized, should_throttle
 from app.api.shortie.funcs import base62encode, make_short_url
 from app.api.shortie.models import ShortenedURL
 from app.api.shortie.schemas import (
@@ -43,7 +43,7 @@ async def read(short_url_id: str, request: Request, response: Response):
     return long_url
 
 
-@router.post("")
+@router.post("", dependencies=[Depends(should_throttle)])
 async def create(
     body: LongUrl, request: Request, user: dict = Depends(get_user_info)
 ):
