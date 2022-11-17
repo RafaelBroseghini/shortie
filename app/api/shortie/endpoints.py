@@ -9,7 +9,7 @@ from starlette.responses import Response
 import app.api.analytics.dao as AnalyticsDAO
 import app.api.shortie.dao as ShortieDAO
 from app.api.analytics.models import Analytics
-from app.api.auth.funcs import get_user_info
+from app.api.auth.funcs import get_user_info, is_authorized
 from app.api.shortie.funcs import base62encode, make_short_url
 from app.api.shortie.models import ShortenedURL
 from app.api.shortie.schemas import (
@@ -52,6 +52,7 @@ async def create(
         short_url_id = base62encode(counter - 1)
         short_url = make_short_url(short_url_id)
         alias, long_url = body.alias, body.long_url
+        user_pk = user.pk
 
         if alias and await ShortieDAO.alias_already_exists(alias):
             return JSONResponse(
@@ -65,8 +66,13 @@ async def create(
                 alias=alias,
                 short_url=short_url,
                 long_url=long_url,
+                owner=user_pk,
             ),
-            Analytics(short_url_id=short_url_id, alias=alias),
+            Analytics(
+                short_url_id=short_url_id,
+                alias=alias,
+                owner=user_pk,
+            ),
         )
 
         ttl = settings.CACHE_TTL
@@ -86,12 +92,8 @@ async def create(
         )
 
 
-@router.put(
-    "/{short_url_id}",
-)
-async def udpate(
-    short_url_id: str, body: LongUrl, user: dict = Depends(get_user_info)
-):
+@router.put("/{short_url_id}", dependencies=[Depends(is_authorized)])
+async def udpate(short_url_id: str, body: LongUrl):
     shortened_url = await ShortieDAO.find_by_short_url_id(short_url_id)
 
     previous_long_url, new_long_url = shortened_url.long_url, body.long_url
@@ -108,10 +110,8 @@ async def udpate(
     )
 
 
-@router.delete(
-    "/{short_url_id}",
-)
-async def delete(short_url_id: str, user: dict = Depends(get_user_info)):
+@router.delete("/{short_url_id}", dependencies=[Depends(is_authorized)])
+async def delete(short_url_id: str):
     shortened_url = await ShortieDAO.find_by_short_url_id(short_url_id)
 
     await shortened_url.delete(shortened_url.pk)

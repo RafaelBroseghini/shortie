@@ -7,6 +7,8 @@ import jwt
 from fastapi.exceptions import HTTPException
 from starlette.requests import Request
 
+import app.api.shortie.dao as ShortieDAO
+import app.api.users.dao as UserDAO
 from app.api.users.models import User
 from app.core.config import settings
 
@@ -61,10 +63,24 @@ def extract_token(encoded_jwt: str) -> str:
     return encoded_jwt.split("Bearer ")[1]
 
 
-def get_user_info(request: Request):
+async def get_user_info(request: Request):
     auth_header = request.headers.get("authorization")
     token = extract_token(auth_header)
     try:
-        return decode_jwt(token)
+        decoded_jwt = decode_jwt(token)
+        username = decoded_jwt["username"]
+        return await UserDAO.find_by_username(username)
     except Exception:
         raise HTTPException(status_code=200, detail="Invalid token.")
+
+
+async def is_authorized(request: Request):
+    user = await get_user_info(request)
+    path = request.url.path.split("/")[-1]
+    short_url = await ShortieDAO.find_by_short_url_id_or_alias(path)
+
+    if short_url.owner != user.pk:
+        raise HTTPException(
+            status_code=403, detail={"error": "Not authorized"}
+        )
+    return user

@@ -8,3 +8,4 @@ class ShortenedURL(JsonModel):
     alias: Optional[str] = Field(index=True)
     short_url: str
     long_url: str
+    owner: str

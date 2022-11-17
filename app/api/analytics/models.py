@@ -9,3 +9,4 @@ class Analytics(JsonModel):
     alias: Optional[str] = Field(index=True)
     clicks: int = 0
     last_visited: datetime = None
+    owner: str
