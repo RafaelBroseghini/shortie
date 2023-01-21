@@ -2,7 +2,9 @@ from contextlib import contextmanager
 
 import redis
 
-client = redis.StrictRedis(decode_responses=True)
+from app.core.config import settings
+
+client = redis.StrictRedis(decode_responses=True, host=settings.REDIS_HOST)
 
 
 @contextmanager
