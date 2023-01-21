@@ -10,7 +10,9 @@ class Settings(BaseSettings):
     COUNTER_CACHE_KEY: str = "COUNTER"
     PASSWORD_SALT: str
     JWT_SECRET: str
-    JWT_ALGORITHM: str
+    JWT_ALGORITHM: str = "HS256"
+    REDIS_HOST: str = "localhost"
+    REDIS_OM_URL: str = "localhost"
     CACHE_TTL: int = 3600
 
     class Config:
