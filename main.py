@@ -26,7 +26,7 @@ async def data_store_obj_not_found_callback(request: Request, exc: Exception):
 
 @app.on_event("startup")
 async def startup_event():
-    if settings.ENV == "LOCAL":
+    if settings.ENV.startswith("LOCAL"):
         with RedisClientManager() as cache:
             cache.flushdb()
             cache.set(settings.COUNTER_CACHE_KEY, settings.INIT_COUNTER_VALUE)
