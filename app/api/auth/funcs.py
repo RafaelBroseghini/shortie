@@ -66,6 +66,10 @@ def extract_token(encoded_jwt: str) -> str:
 
 async def get_user_info(request: Request):
     auth_header = request.headers.get("authorization")
+    if not auth_header:
+        raise HTTPException(
+            status_code=403, detail={"error": "Not authorized"}
+        )
     token = extract_token(auth_header)
     try:
         decoded_jwt = decode_jwt(token)
