@@ -19,12 +19,13 @@ pre-commit = "*"
 flake8 = "*"
 python-dotenv = "*"
 pyjwt = "*"
+httpx = "*"
 
 [dev-packages]
 black = "*"
 
 [requires]
-python_version = "3.11"
+python_version = "3.9"
 
 [pipenv]
 allow_prereleases = true
