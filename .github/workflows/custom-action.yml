@@ -7,6 +7,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Dispatch custom action
-      uses: rafaelbroseghini/diff@v1
+      uses: rafaelbroseghini/diff
       with:
-        milliseconds: 1000
+        token: ${{ secrets.GITHUB_TOKEN }}
