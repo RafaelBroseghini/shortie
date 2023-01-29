@@ -1,6 +1,10 @@
 name: Dispatch Workflow
 on:
-  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize]
+    branches:
+      - 'main'
+      - 'master'
 
 jobs:
   dispatch:
