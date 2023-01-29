@@ -1,0 +1,12 @@
+name: Dispatch Workflow
+on:
+  workflow_dispatch:
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Dispatch custom action
+      uses: rafaelbroseghini/diff@v1
+      with:
+        milliseconds: 1000
