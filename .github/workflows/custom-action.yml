@@ -10,3 +10,4 @@ jobs:
       uses: rafaelbroseghini/diff
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
+
