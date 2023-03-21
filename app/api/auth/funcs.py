@@ -70,7 +70,8 @@ async def get_user_info(request: Request):
         raise HTTPException(
             status_code=403, detail={"error": "Not authorized"}
         )
-    token = extract_token(auth_header)
+    else:
+        token = extract_token(auth_header)
     try:
         decoded_jwt = decode_jwt(token)
         username = decoded_jwt["username"]
@@ -91,16 +92,26 @@ async def is_authorized(request: Request):
     return user
 
 
-async def should_throttle(request: Request):
-    user = await get_user_info(request)
-    username = user.username
+async def should_throttle(request: Request) -> User | None:
+    try:
+        user = await get_user_info(request)
+        username = user.username
+        request_limit_per_period = user.request_limit_per_period
+        period_seconds = user.period_seconds
+    except HTTPException:
+        user, username = None, None
+        if request.client:
+            username = request.client.host
+        request_limit_per_period, period_seconds = 5, 5
 
-    r = RateLimiter(user.request_limit_per_period, user.period_seconds)
+    r = RateLimiter(request_limit_per_period, period_seconds)
     r.incr_request_count(username)
 
-    should_throttle = r.too_many_requests(username)
+    throttled = r.too_many_requests(username)
 
-    if should_throttle:
+    if throttled:
         raise HTTPException(
             status_code=429, detail={"error": "Too many requests"}
         )
+
+    return user
