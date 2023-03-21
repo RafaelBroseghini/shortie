@@ -8,5 +8,5 @@ class Analytics(JsonModel):
     short_url_id: str = Field(index=True)
     alias: Optional[str] = Field(index=True)
     clicks: int = 0
-    last_visited: datetime = None
+    last_visited: Optional[datetime]
     owner: str

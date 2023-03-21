@@ -9,7 +9,7 @@ from starlette.responses import Response
 import app.api.analytics.dao as AnalyticsDAO
 import app.api.shortie.dao as ShortieDAO
 from app.api.analytics.models import Analytics
-from app.api.auth.funcs import get_user_info, is_authorized, should_throttle
+from app.api.auth.funcs import is_authorized, should_throttle
 from app.api.shortie.funcs import base62encode, make_short_url
 from app.api.shortie.models import ShortenedURL
 from app.api.shortie.schemas import (
@@ -18,6 +18,7 @@ from app.api.shortie.schemas import (
     ShortenReponse,
     UpdateResponse,
 )
+from app.api.users.models import User
 from app.cache.conn import RedisClientManager
 from app.core.config import settings
 
@@ -43,16 +44,23 @@ async def read(short_url_id: str, request: Request, response: Response):
     return long_url
 
 
-@router.post("", dependencies=[Depends(should_throttle)])
+@router.post("")
 async def create(
-    body: LongUrl, request: Request, user: dict = Depends(get_user_info)
+    body: LongUrl,
+    request: Request,
+    user: User | None = Depends(should_throttle),
 ):
     with RedisClientManager() as cache:
         counter = cache.incr(settings.COUNTER_CACHE_KEY)
         short_url_id = base62encode(counter - 1)
         short_url = make_short_url(short_url_id)
         alias, long_url = body.alias, body.long_url
-        user_pk = user.pk
+        if user:
+            user_pk = user.pk
+        else:
+            user_pk = None
+            if request.client:
+                user_pk = request.client.host
 
         if alias and await ShortieDAO.alias_already_exists(alias):
             return JSONResponse(
@@ -88,7 +96,6 @@ async def create(
             alias=alias,
             short_url=short_url,
             long_url=long_url,
-            ttl=ttl,
         )
 
 

@@ -26,7 +26,7 @@ class RateLimiter:
     def incr_request_count(self, user):
         now = RateLimiter.now().timestamp()
         user_limiter_key = self.user_key(user)
-        self.client.zadd(user_limiter_key, {now: now})
+        self.client.zadd(user_limiter_key, {str(now): now})
 
     def too_many_requests(self, user):
         user_limiter_key = self.user_key(user)
