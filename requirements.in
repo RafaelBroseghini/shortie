@@ -6,3 +6,4 @@ redis-om
 requests
 pyjwt
 python-dotenv
+qrcode
