@@ -25,3 +25,7 @@ class DeleteResponse(BaseModel):
     short_url: str
     long_url: str
     operation: str = "DELETE"
+
+
+class ShortUrlId(BaseModel):
+    short_url_id: str

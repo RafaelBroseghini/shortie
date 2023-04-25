@@ -1,9 +1,10 @@
 import asyncio
 import datetime
 
+import qrcode
 import requests
 from fastapi import APIRouter, Depends
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from starlette.requests import Request
 from starlette.responses import Response
 
@@ -17,6 +18,7 @@ from app.api.shortie.schemas import (
     DeleteResponse,
     LongUrl,
     ShortenReponse,
+    ShortUrlId,
     UpdateResponse,
 )
 from app.api.users.models import User
@@ -141,3 +143,19 @@ async def delete(short_url_id: str):
         short_url=shortened_url.short_url,
         long_url=shortened_url.long_url,
     )
+
+
+@router.post("/qr", response_class=FileResponse)
+async def qr(body: ShortUrlId):
+    short_url = await ShortieDAO.find_by_short_url_id_or_alias(
+        body.short_url_id
+    )
+
+    # TODO: change to deployed host/short_url_id
+    img = qrcode.make(short_url.long_url)
+
+    filename = f"/tmp/{body.short_url_id}.png"
+
+    img.save(filename)
+
+    return FileResponse(filename)
