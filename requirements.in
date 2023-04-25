@@ -1,0 +1,8 @@
+fastapi
+gunicorn
+uvicorn[standard]
+redis
+redis-om
+requests
+pyjwt
+python-dotenv

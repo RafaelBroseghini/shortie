@@ -7,7 +7,7 @@ from starlette.requests import Request
 from app.cache.conn import RedisClientManager
 from app.core.config import settings
 from app.router import api_router
-from preload import load_users
+from preload import load_analytics, load_url, load_users
 
 app = FastAPI(debug=True, name="Shortie - Link Shrtnr :)")
 
@@ -21,7 +21,7 @@ async def conn_error_callback(request: Request, exc: Exception):
 
 @app.exception_handler(NotFoundError)
 async def data_store_obj_not_found_callback(request: Request, exc: Exception):
-    return JSONResponse({"detail": "Short URL not found :("}, status_code=500)
+    return JSONResponse({"detail": "Short URL not found :("}, status_code=404)
 
 
 @app.on_event("startup")
@@ -30,5 +30,7 @@ async def startup_event():
         with RedisClientManager() as cache:
             cache.flushdb()
             cache.set(settings.COUNTER_CACHE_KEY, settings.INIT_COUNTER_VALUE)
-        await Migrator().run()
-        await load_users()
+    await Migrator().run()
+    await load_users()
+    await load_url()
+    await load_analytics()

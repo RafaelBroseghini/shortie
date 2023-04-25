@@ -12,6 +12,7 @@ from app.api.auth.funcs import (
 from app.api.auth.responses import (
     AuthFailedResponse,
     JWTResponse,
+    MissingCredentialsResponse,
     SignUpSuccessResponse,
     UserAlreadyExistsResponse,
 )
@@ -22,9 +23,12 @@ router = APIRouter()
 
 @router.get("/login")
 async def login(request: Request):
-    username, password = decode_credentials(request)
-
     try:
+        username, password = decode_credentials(request)
+
+        if not username and not password:
+            return MissingCredentialsResponse()
+
         user = await UserDAO.find_by_username(username)
 
         if password == user.password:

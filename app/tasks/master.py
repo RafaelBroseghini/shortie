@@ -1,7 +1,7 @@
-from celery import Celery
+# from celery import Celery
 
-from app.core import celery_config
+# from app.core import celery_config
 
-app = Celery()
+# app = Celery()
 
-app.config_from_object(celery_config)
+# app.config_from_object(celery_config)

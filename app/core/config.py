@@ -12,11 +12,15 @@ class Settings(BaseSettings):
     JWT_SECRET: str
     JWT_ALGORITHM: str = "HS256"
     REDIS_HOST: str = "localhost"
+    REDIS_PASSWORD: str = ""
+    REDIS_PORT: int = 6379
     REDIS_OM_URL: str = "localhost"
     CACHE_TTL: int = 3600
 
     class Config:
         env_file = ".env"
+
+    #     env_file_encoding = "utf-8"
 
 
 @lru_cache

@@ -1,0 +1,48 @@
+# flyctl launch added from .gitignore
+**/.env*
+**/.idea
+**/.ipynb_checkpoints
+**/.mypy_cache
+**/.vscode
+**/__pycache__
+**/.pytest_cache
+**/htmlcov
+**/dist
+**/site
+**/.coverage
+**/coverage.xml
+**/.netlify
+**/test.db
+**/log.txt
+**/Pipfile.lock
+**/env3.*
+**/env
+**/docs_build
+**/venv
+**/docs.zip
+**/archive.zip
+
+# vim temporary files
+**/*~
+**/.*.sw?
+
+# flyctl launch added from .pytest_cache/.gitignore
+# Created by pytest automatically.
+.pytest_cache/**/*
+
+# flyctl launch added from .tox/py310/.gitignore
+# created by virtualenv automatically
+.tox/py310/**/*
+
+# flyctl launch added from .tox/py311/.gitignore
+# created by virtualenv automatically
+.tox/py311/**/*
+
+# flyctl launch added from .tox/py39/.gitignore
+# created by virtualenv automatically
+.tox/py39/**/*
+
+# flyctl launch added from app/.pytest_cache/.gitignore
+# Created by pytest automatically.
+app/.pytest_cache/**/*
+fly.toml

@@ -1,6 +1,7 @@
 import asyncio
 import datetime
 
+import requests
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse, RedirectResponse
 from starlette.requests import Request
@@ -20,7 +21,9 @@ from app.api.shortie.schemas import (
 )
 from app.api.users.models import User
 from app.cache.conn import RedisClientManager
-from app.core.config import settings
+from app.core.config import get_settings
+
+settings = get_settings()
 
 router = APIRouter()
 
@@ -41,7 +44,17 @@ async def read(short_url_id: str, request: Request, response: Response):
 
     long_url = shortened_url.long_url
 
-    return long_url
+    if not (long_url.startswith("https://") or long_url.startswith("http://")):
+        try:
+            schemes = ["https://", "http://"]
+            for scheme in schemes:
+                r = requests.head(scheme + long_url)
+                if r.status_code < 400:
+                    return RedirectResponse(scheme + long_url)
+        except requests.exceptions.RequestException:
+            pass
+
+    return RedirectResponse(long_url)
 
 
 @router.post("")

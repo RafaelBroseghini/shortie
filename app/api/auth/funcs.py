@@ -2,6 +2,7 @@ import base64
 import datetime
 import hashlib
 from datetime import timezone
+from typing import Tuple
 
 import jwt
 from fastapi.exceptions import HTTPException
@@ -11,7 +12,9 @@ import app.api.shortie.dao as ShortieDAO
 import app.api.users.dao as UserDAO
 from app.api.common.rate_limiter import RateLimiter
 from app.api.users.models import User
-from app.core.config import settings
+from app.core.config import get_settings
+
+settings = get_settings()
 
 
 def build_payload(user: User) -> dict:
@@ -23,18 +26,22 @@ def build_payload(user: User) -> dict:
     }
 
 
-def decode_credentials(request: Request):
+def decode_credentials(
+    request: Request,
+) -> Tuple[str, str] | Tuple[None, None]:
     auth_header = request.headers.get("authorization")
 
-    _, encoded_credentials = auth_header.split("Basic ")
+    if auth_header:
+        _, encoded_credentials = auth_header.split("Basic ")
 
-    credentials = base64.b64decode(encoded_credentials).decode("utf-8")
+        credentials = base64.b64decode(encoded_credentials).decode("utf-8")
 
-    username, password = credentials.split(":", 1)
+        username, password = credentials.split(":", 1)
 
-    encrypted_password = salt_and_sha256_encrypt(password)
+        encrypted_password = salt_and_sha256_encrypt(password)
 
-    return username, encrypted_password
+        return username, encrypted_password
+    return None, None
 
 
 def salt_and_sha256_encrypt(password: str) -> str:

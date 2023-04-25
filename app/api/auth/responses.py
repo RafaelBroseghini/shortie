@@ -2,7 +2,7 @@ from fastapi.responses import JSONResponse
 
 
 class AuthFailedResponse:
-    def __new__(self):
+    def __new__(cls):
         return JSONResponse(
             status_code=200,
             content={
@@ -11,8 +11,16 @@ class AuthFailedResponse:
         )
 
 
+class MissingCredentialsResponse:
+    def __new__(cls):
+        return JSONResponse(
+            status_code=200,
+            content={"error": "Missing credentials."},
+        )
+
+
 class UserAlreadyExistsResponse:
-    def __new__(self):
+    def __new__(cls):
         return JSONResponse(
             status_code=200,
             content={"error": "Username is already taken."},
@@ -20,12 +28,12 @@ class UserAlreadyExistsResponse:
 
 
 class JWTResponse:
-    def __new__(self, encoded_jwt):
+    def __new__(cls, encoded_jwt):
         return {"access_token": encoded_jwt}
 
 
 class SignUpSuccessResponse:
-    def __new__(self):
+    def __new__(cls):
         return JSONResponse(
             status_code=200,
             content={"success": "Success sign up!"},
