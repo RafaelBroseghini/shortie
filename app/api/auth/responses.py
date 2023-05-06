@@ -5,9 +5,7 @@ class AuthFailedResponse:
     def __new__(cls):
         return JSONResponse(
             status_code=200,
-            content={
-                "error": "Username and password combination could not be found."
-            },
+            content={"error": "Username and password combination could not be found."},
         )
 
 

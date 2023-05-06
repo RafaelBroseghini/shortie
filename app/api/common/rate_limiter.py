@@ -37,9 +37,7 @@ class RateLimiter:
         period_ago = RateLimiter.period_ago(self.period)
         period_ago_ts = (now - period_ago).timestamp()
 
-        requests = self.client.zrevrangebyscore(
-            user_limiter_key, now_ts, period_ago_ts
-        )
+        requests = self.client.zrevrangebyscore(user_limiter_key, now_ts, period_ago_ts)
 
         self.client.zremrangebyscore(user_limiter_key, 0, period_ago_ts - 1)
 

@@ -14,8 +14,13 @@ from app.api.analytics.models import Analytics
 from app.api.auth.funcs import is_authorized, should_throttle
 from app.api.shortie.funcs import base62encode, make_short_url
 from app.api.shortie.models import ShortenedURL
-from app.api.shortie.schemas import (DeleteResponse, LongUrl, ShortenReponse,
-                                     ShortUrlId, UpdateResponse)
+from app.api.shortie.schemas import (
+    DeleteResponse,
+    LongUrl,
+    ShortenReponse,
+    ShortUrlId,
+    UpdateResponse,
+)
 from app.api.users.models import User
 from app.cache.conn import RedisClientManager
 from app.core.config import get_settings
@@ -142,9 +147,7 @@ async def delete(short_url_id: str):
 
 @router.post("/qr", response_class=FileResponse)
 async def qr(body: ShortUrlId):
-    short_url = await ShortieDAO.find_by_short_url_id_or_alias(
-        body.short_url_id
-    )
+    short_url = await ShortieDAO.find_by_short_url_id_or_alias(body.short_url_id)
 
     # TODO: change to deployed host/short_url_id
     img = qrcode.make(short_url.long_url)
