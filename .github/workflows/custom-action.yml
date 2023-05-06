@@ -1,26 +1,49 @@
-name: Dispatch Workflow
+name: Lint and Format
+
 on:
   pull_request:
-    types: [opened, synchronize]
     branches:
-      - 'main'
-      - 'master'
+      - main
 
 jobs:
-  dispatch:
+  lint-and-format:
     runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-      with:
-        ref: main
-        path: base
-    - uses: actions/checkout@v3
-      with:
-        path: target
 
-    - run: cat ${{ github.workspace}}/base/.github/workflows/custom-action.yml
-    - run: cat ${{ github.workspace}}/target/.github/workflows/custom-action.yml
-    # - name: Diff k8s manifest changes
-    #   uses: rafaelbroseghini/diff@main
-    #   with:
-    #     token: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.x
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install black isort
+
+      - name: Run Black and isort
+        run: |
+          isort .
+          black .
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -A
+          git commit -m "Apply Black and isort formatting" || true
+
+      - name: Squash last commit with user commit
+        run: |
+          git rebase -i HEAD~2 --autosquash
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.head_ref }}
