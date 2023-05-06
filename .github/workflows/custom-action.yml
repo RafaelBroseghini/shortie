@@ -29,11 +29,11 @@ jobs:
       - uses: isort/isort-action@master
         with:
             requirementsFiles: "requirements.txt"
-            configuration: "--py 39"
+            configuration: "--atomic --settings-path=pyproject.toml"
 
       - uses: psf/black@stable
         with:
-          options: --diff
+          options: --config pyproject.toml
 
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
