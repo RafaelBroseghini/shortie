@@ -40,7 +40,7 @@ jobs:
 
       - name: Squash last commit with user commit
         run: |
-          git rebase -i HEAD~2 --autosquash
+          git reset --soft HEAD~2 && git commit --amend --no-edit
 
       - name: Push changes
         uses: ad-m/github-push-action@master
