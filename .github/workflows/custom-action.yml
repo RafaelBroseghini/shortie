@@ -40,10 +40,11 @@ jobs:
 
       - name: Squash last commit with user commit
         run: |
-          git reset --soft HEAD~2 && git commit --amend --no-edit
+          git rebase HEAD~2 --autosquash
 
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.head_ref }}
+          force_with_lease: true
