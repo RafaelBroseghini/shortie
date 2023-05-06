@@ -14,13 +14,8 @@ from app.api.analytics.models import Analytics
 from app.api.auth.funcs import is_authorized, should_throttle
 from app.api.shortie.funcs import base62encode, make_short_url
 from app.api.shortie.models import ShortenedURL
-from app.api.shortie.schemas import (
-    DeleteResponse,
-    LongUrl,
-    ShortenReponse,
-    ShortUrlId,
-    UpdateResponse,
-)
+from app.api.shortie.schemas import (DeleteResponse, LongUrl, ShortenReponse,
+                                     ShortUrlId, UpdateResponse)
 from app.api.users.models import User
 from app.cache.conn import RedisClientManager
 from app.core.config import get_settings

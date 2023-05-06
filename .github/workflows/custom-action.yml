@@ -24,27 +24,18 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install black isort
+          pip install isort
 
-      - name: Run Black and isort
-        run: |
-          isort .
-          black .
-
-      - name: Commit changes
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add -A
-          git commit -m "Apply Black and isort formatting" || true
-
-      - name: Squash last commit with user commit
-        run: |
-          git rebase HEAD~2 --autosquash
-
-      - name: Push changes
-        uses: ad-m/github-push-action@master
+      - uses: isort/isort-action@master
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.head_ref }}
-          force_with_lease: true
+            requirementsFiles: "requirements.txt"
+            configuration: "--py 39"
+
+      - uses: psf/black@stable
+        with:
+          options: --diff
+
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_options: '--no-verify --signoff'
+          push_options: '--force'

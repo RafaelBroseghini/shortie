@@ -3,19 +3,12 @@ from fastapi import APIRouter
 from starlette.requests import Request
 
 import app.api.users.dao as UserDAO
-from app.api.auth.funcs import (
-    build_payload,
-    decode_credentials,
-    encode_jwt,
-    salt_and_sha256_encrypt,
-)
-from app.api.auth.responses import (
-    AuthFailedResponse,
-    JWTResponse,
-    MissingCredentialsResponse,
-    SignUpSuccessResponse,
-    UserAlreadyExistsResponse,
-)
+from app.api.auth.funcs import (build_payload, decode_credentials, encode_jwt,
+                                salt_and_sha256_encrypt)
+from app.api.auth.responses import (AuthFailedResponse, JWTResponse,
+                                    MissingCredentialsResponse,
+                                    SignUpSuccessResponse,
+                                    UserAlreadyExistsResponse)
 from app.api.auth.schemas import SignUp
 
 router = APIRouter()
