@@ -8,6 +8,4 @@ api_router = APIRouter()
 
 api_router.include_router(auth_router, prefix="/auth", tags=["auth"])
 api_router.include_router(shortie_router, prefix="/shortie", tags=["shortie"])
-api_router.include_router(
-    analytics_router, prefix="/analytics", tags=["analytics"]
-)
+api_router.include_router(analytics_router, prefix="/analytics", tags=["analytics"])

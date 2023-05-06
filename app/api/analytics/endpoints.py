@@ -8,9 +8,7 @@ router = APIRouter()
 
 @router.get("/{short_url_id}", response_model=ReadResponse)
 async def view_number_of_clicks(short_url_id: str):
-    analytics = await Analytics.find(
-        Analytics.short_url_id == short_url_id
-    ).first()
+    analytics = await Analytics.find(Analytics.short_url_id == short_url_id).first()
 
     return ReadResponse(
         short_url_id=analytics.short_url_id,

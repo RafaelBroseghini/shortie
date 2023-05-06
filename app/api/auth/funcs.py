@@ -50,15 +50,11 @@ def salt_and_sha256_encrypt(password: str) -> str:
 
 
 def one_hour_from_now():
-    return datetime.datetime.now(tz=timezone.utc) + datetime.timedelta(
-        seconds=3600
-    )
+    return datetime.datetime.now(tz=timezone.utc) + datetime.timedelta(seconds=3600)
 
 
 def encode_jwt(payload: dict) -> str:
-    return jwt.encode(
-        payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM
-    )
+    return jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
 
 
 def decode_jwt(encoded_jwt: str) -> dict:
@@ -74,9 +70,7 @@ def extract_token(encoded_jwt: str) -> str:
 async def get_user_info(request: Request):
     auth_header = request.headers.get("authorization")
     if not auth_header:
-        raise HTTPException(
-            status_code=403, detail={"error": "Not authorized"}
-        )
+        raise HTTPException(status_code=403, detail={"error": "Not authorized"})
     else:
         token = extract_token(auth_header)
     try:
@@ -93,9 +87,7 @@ async def is_authorized(request: Request):
     short_url = await ShortieDAO.find_by_short_url_id_or_alias(path)
 
     if short_url.owner != user.pk:
-        raise HTTPException(
-            status_code=403, detail={"error": "Not authorized"}
-        )
+        raise HTTPException(status_code=403, detail={"error": "Not authorized"})
     return user
 
 
@@ -117,8 +109,6 @@ async def should_throttle(request: Request) -> User | None:
     throttled = r.too_many_requests(username)
 
     if throttled:
-        raise HTTPException(
-            status_code=429, detail={"error": "Too many requests"}
-        )
+        raise HTTPException(status_code=429, detail={"error": "Too many requests"})
 
     return user
