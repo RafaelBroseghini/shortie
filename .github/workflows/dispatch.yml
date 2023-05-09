@@ -1,0 +1,12 @@
+name: Print PR Event JSON
+
+on:
+  pull_request
+
+jobs:
+  print-event-json:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Print event JSON
+      run: |
+        echo '${{ toJson(github.event) }}'
