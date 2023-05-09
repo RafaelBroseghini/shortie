@@ -1,4 +1,4 @@
-name: Lint and Forma
+name: Lint and Formatting
 
 on:
   pull_request:
