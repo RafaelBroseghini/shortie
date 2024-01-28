@@ -26,8 +26,14 @@ async def data_store_obj_not_found_callback(request: Request, exc: Exception):
 
 @app.on_event("startup")
 async def startup_event():
-    if settings.ENV.startswith("LOCAL"):
-        with RedisClientManager() as cache:
+    with RedisClientManager() as cache:
+        try:
+            cache.ping()
+        except ConnectionError:
+            raise ConnectionError(
+                "Connection refused. Please check the Redis connection."
+            )
+        if settings.ENV.startswith("LOCAL"):
             cache.flushdb()
             cache.set(settings.COUNTER_CACHE_KEY, settings.INIT_COUNTER_VALUE)
     await Migrator().run()
